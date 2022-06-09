@@ -1,6 +1,8 @@
 # Goal: Determine for potential overloading of cells due to too many PCR cycles
 
 # initialize packages 
+from asyncore import write
+from multiprocessing import pool
 from os import listdir
 from os.path import isfile, join
 from collections import defaultdict
@@ -171,7 +173,7 @@ for key_index in idx_dict: # key_index: [1,2],[5,6]
     #print(tracker_key,key) # tracker is the index of hashmap
     if tracker_key in key_index: # if the index is in the concentration, pull it out
       pks.append(key)
-  pool_1["Concentration_Peak1"].append(pks)
+  pool_1["Concentration_Peak"].append(pks)
   pks = []
 
   for tracker_key_1, key_1 in enumerate(hash_map_pool_1["Size"]):
@@ -227,7 +229,7 @@ for key_index in idx_dict: # key_index: [1,2],[5,6]
     #print(tracker_key,key) # tracker is the index of hashmap
     if tracker_key in key_index: # if the index is in the concentration, pull it out
       pks.append(key)
-  pool_2["Concentration_Peak1"].append(pks)
+  pool_2["Concentration_Peak"].append(pks)
   pks = []
 
   for tracker_key_1, key_1 in enumerate(hash_map_pool_2["Size"]):
@@ -287,7 +289,7 @@ for key_index in idx_dict: # key_index: [1,2],[5,6]
     #print(tracker_key,key) # tracker is the index of hashmap
     if tracker_key in key_index: # if the index is in the concentration, pull it out
       pks.append(key)
-  pool_3["Concentration_Peak1"].append(pks)
+  pool_3["Concentration_Peak"].append(pks)
   pks = []
 
   for tracker_key_1, key_1 in enumerate(hash_map_pool_3["Size"]):
@@ -344,7 +346,7 @@ for key_index in idx_dict: # key_index: [1,2],[5,6]
     #print(tracker_key,key) # tracker is the index of hashmap
     if tracker_key in key_index: # if the index is in the concentration, pull it out
       pks.append(key)
-  pool_4["Concentration_Peak1"].append(pks)
+  pool_4["Concentration_Peak"].append(pks)
   pks = []
 
   for tracker_key_1, key_1 in enumerate(hash_map_pool_4["Size"]):
@@ -365,16 +367,122 @@ print(pool_4)
 #STEP 3: Write data from pool into CSV file for analysis
 
 # open csv file for writing
-# f = open('/Users/aotgonbayar/Desktop/Python/code.csv','w') # open the file in the write mode
+fieldnames_1 = ['Pool1_Concentration_ng/uL', 'Pool1_Size_bp',
+'Pool2_Concentration_ng/uL ', 'Pool2_Size_bp',
+'Pool3_Concentration_ng/uL ', 'Pool3_Size_bp',
+'Pool4_Concentration_ng/uL ', 'Pool4_Size_bp',
+]
+#sub_fieldname = ['Pool_Concentration','Pool_Size']
 
-# # create the csv writer
-# writer_csv = csv.writer(f)
+
+# find how many peaks in each pool
+#peak_qty = len(str(pool_4["Size"][0][0]))
+ # construct dataframe from a dictionary
+
+#peak_qty = len(str(pool_1["Size"][0][0]))
+temp_list = []
+df = []
+for x, y in enumerate(pool_1["Size"]): # number of peaks
+  #print(x,y) # x is idx, y is the size 
+  #idk =  (pool_1["Concentration_Peak"][x]) #[list:{x,y}]
+  #idk_1 = idk[0] # [x]
+  #print(idk_1)
+
+  current_pk_conc = pool_1["Concentration_Peak"][x] #[1.58],[1.54],[1.56]
+  concen_only = current_pk_conc[0] # only first component of list
+  #print(concen_only)
+
+  current_pk_size = pool_1["Size"][x]
+  size_only = current_pk_size[0]
+  
+  #print(size_only)
+  #print(pool_1["Size"][x][0])
+  d = {'Concentration_Peak': concen_only,
+      'Size':size_only,
+       }
+
+  #temp_df = pd.DataFrame(data=d,ignore_index = True)
+  
+  #df.append(temp_df)
+  #temp_df = pd.DataFrame()
+  
+df = pd.DataFrame(data=pool_1)
+#df.set_index('Concentration_Peak', 1**peak_qty)
+print(df)
+  
+
+#df = pd.DataFrame(data=pool_1)
+#print(df)
+
+######################################################################
+# #subheader = ['Concentration_Peak_ng/ul','','Size_bp']
+# with open('/Users/aotgonbayar/Desktop/Python/code.csv','w') as f:# open the file in the write mode
+
+# # # create the csv writer
+
+#   writer_csv = csv.DictWriter(f, fieldnames= fieldnames_1)
+
+# # create subheader
+#   writer_csv.writeheader()   # dataframe, 
+
+#   for sub_fieldname in fieldnames_1:
+    
+#     if 'Pool1_Concentration' in sub_fieldname:
+#       #counter= 0
+#       for idx_current, key_current in enumerate(pool_1["Concentration_Peak"]):
+#         #counter+=1
+#         #writer_csv.writerow({'Pool1_Concentration_ng/uL':pool_1["Concentration_Peak"[idx_current][0]]})
+#         #print(pool_1["Concentration_Peak"][idx_current][0])
+#         writer_csv.writerow({'Pool1_Concentration_ng/uL':pool_1["Concentration_Peak"][idx_current][0],
+#                             'Pool1_Size_bp':pool_1["Size"][idx_current][0]})
+#     elif 'Pool1_Concentration' in sub_fieldname:
+#       for idx_current, key_current in enumerate(pool_2["Concentration_Peak"]):
+#         #counter+=1
+#         #writer_csv.writerow({'Pool1_Concentration_ng/uL':pool_1["Concentration_Peak"[idx_current][0]]})
+#         #print(pool_1["Concentration_Peak"][idx_current][0])
+#         writer_csv.writerow({'Pool2_Concentration_ng/uL':pool_2["Concentration_Peak"][idx_current][0],
+#                             'Pool2_Size_bp':pool_2["Size"][idx_current][0]})                      
+#############################################################################
+        #writer_csv.writerow({'Pool1_Size_bp':pool_1["Size"][idx_current][1]})
+
+        #print(idx_current,key_current) [0,1,2],[1.58,0.0332]
+      
+      #print(sub_fieldname)
+      #writer_csv.writerow(pool_1["Concentration_Peak"])
+        #print(idx_current,key_current)
+      #writer_csv.writerow(sub_fieldname,{pool_1["Concentration_Peak"][[0][0]]})
+        #writer_csv.writerow({pool_1["Concentration_Peak"][idx_current][0]})
+
+
+
+
+
+  
+  
+
+
+
+  #for x_idx, key_x in enumerate(pool_1["Concentration_Peak"]):
+    #writer_csv.writerow({'Pool1':pool_1["Concentration_Peak"][x_idx][0]})
+
+  
 
 # # write a row to the csv file
-# writer_csv.writerow(row)
+  #writer_csv.writerow(header)
+  
+  #writer_csv.writerow(pool_1["Concentration_Peak"])
 
-# # close the file
-# f.close()
+  #for sub_head in header:
+    #if 'Pool' in sub_head: # if header has pool in their name: then make a subheader
+      #writer_csv.writerow(subheader) # subheader with concentration and size (1x2 column)
+    #for key in pool_1["Concentration_Peak"]: 
+      #writer_csv.writerow([key[0],key[1]])
+
+  #writer_csv.writerow([pool_1[],pool_2,pool_3,pool_4])
+
+
+
+
 
 
   
